@@ -50,3 +50,41 @@ def delete_contact(db:Session, contact_id:int):
     db.delete(db_contact)
     db.commit()
     return True
+
+def contacts_with_comming(db:Session)->List[Contact]:
+    today = date.today()
+    next_week = today + timedelta(days=7)
+    if today.year == next_week.year:
+        return db.query(Contact).filter(
+            and_(
+                extract('month', Contact.birth_date) >= today.month,
+                extract('month', Contact.birth_date) <= next_week.month,
+                or_(
+                    extract('month', Contact.birth_date) > today.month,
+                    and_(
+                        extract('month', Contact.birth_date) == today.month, 
+                        extract('day', Contact.birth_date) >= today.day
+                        )
+                    ),
+                or_(
+                    extract('month', Contact.birth_date) < next_week.month, 
+                    and_(
+                        extract('month', Contact.birth_date) == next_week.month,
+                        extract('day', Contact.birth_date) <= next_week.month,
+                        )
+                    )
+                )
+            ).all()
+    else:
+        return db.query(Contact).filter(
+            or_(and_(
+                extract('month', Contact.birth_date) == today.month,
+                extract('day', Contact.birth_date) <= today.day
+            ), and_(
+                extract('month', Contact.birth_date) == next_week.month,
+                extract('day', Contact.birth_date) <= next_week.day
+
+            ))
+        ).all()
+            
+             
