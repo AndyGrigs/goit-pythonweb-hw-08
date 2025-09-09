@@ -17,7 +17,7 @@ class ContactBase(BaseModel):
         return v.strip().title()
     
     @validator('phone_number')
-    def validate_name(cls, v):
+    def validate_phone(cls, v):
         import re
         phone_pattern = re.compile(r'^[\+]?[1-9][\d\s\-\(\)]{8,15}$')
         if not phone_pattern.match('', ' '):
@@ -41,7 +41,7 @@ class ContactUpdate(BaseModel):
             raise ValueError("Name cannot be empty")
         return v.strip().title() if v else v
     
-class ContactResponce(BaseModel):
+class ContactResponse(BaseModel):
     id: int
     class Config:
         from_attributes = True

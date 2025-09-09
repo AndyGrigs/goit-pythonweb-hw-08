@@ -1,15 +1,15 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_ , and_ ,extract
-from db_utils.models import Contact
-from db_utils.schemas import ContactCreate, ContactUpdate
+from app.models.contacts import Contact
+from app.schemas.contacts import ContactCreate, ContactUpdate
 from datetime import date, timedelta
 
 def get_contact(db: Session, contact_id:int) -> Optional[Contact]:
     return db.query(Contact).filter(Contact.id == contact_id).first()
 
 
-def get_contacts(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> Optional[Contact]:
+def get_contacts(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[Contact]:
     query = db.query(Contact)
     if search:
         search_filter = or_(
@@ -34,7 +34,7 @@ def update_contact(db:Session, contact_id:int, contact_update: ContactUpdate) ->
     if not db_contact:
         return None
     update_data = contact_update.model_dump(exclude_unset=True)
-    for field, value in update_contact.items():
+    for field, value in update_data.items():
         setattr(db_contact, field, value)
 
     db.commit()
@@ -51,7 +51,7 @@ def delete_contact(db:Session, contact_id:int):
     db.commit()
     return True
 
-def contacts_with_comming(db:Session)->List[Contact]:
+def contacts_with_upcomming_birthdays(db:Session)->List[Contact]:
     today = date.today()
     next_week = today + timedelta(days=7)
     if today.year == next_week.year:
@@ -79,7 +79,7 @@ def contacts_with_comming(db:Session)->List[Contact]:
         return db.query(Contact).filter(
             or_(and_(
                 extract('month', Contact.birth_date) == today.month,
-                extract('day', Contact.birth_date) <= today.day
+                extract('day', Contact.birth_date) >= today.day
             ), and_(
                 extract('month', Contact.birth_date) == next_week.month,
                 extract('day', Contact.birth_date) <= next_week.day
