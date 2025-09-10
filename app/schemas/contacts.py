@@ -20,7 +20,7 @@ class ContactBase(BaseModel):
     def validate_phone(cls, v):
         import re
         phone_pattern = re.compile(r'^[\+]?[1-9][\d\s\-\(\)]{8,15}$')
-        if not phone_pattern.match('', ' '):
+        if not phone_pattern.match(v.replace('', ' ')):
             raise ValueError("Wrong phone number format!")
         return v
     
@@ -41,7 +41,7 @@ class ContactUpdate(BaseModel):
             raise ValueError("Name cannot be empty")
         return v.strip().title() if v else v
     
-class ContactResponse(BaseModel):
+class ContactResponse(ContactBase):
     id: int
     class Config:
         from_attributes = True
