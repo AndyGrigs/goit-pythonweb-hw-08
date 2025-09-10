@@ -15,14 +15,14 @@ class ContactBase(BaseModel):
         if not v.strip():
             raise ValueError("Field should not be ampty!")
         return v.strip().title()
-    
-    @validator('phone_number')
-    def validate_phone(cls, v):
-        import re
-        phone_pattern = re.compile(r'^[\+]?[1-9][\d\s\-\(\)]{8,15}$')
-        if not phone_pattern.match(v.replace('', ' ')):
-            raise ValueError("Wrong phone number format!")
-        return v
+
+@validator('phone_number')
+def validate_phone(cls, v):
+    import re
+    phone_pattern = re.compile(r'^[\+]?[1-9][\d\s\-\(\)]{8,15}$')
+    if not phone_pattern.match(v.replace(' ', '')):
+        raise ValueError("Wrong phone number format!")
+    return v
     
 class ContactCreate(ContactBase):
     pass

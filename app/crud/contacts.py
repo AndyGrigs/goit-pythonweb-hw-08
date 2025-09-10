@@ -51,7 +51,7 @@ def delete_contact(db:Session, contact_id:int):
     db.commit()
     return True
 
-def contacts_with_upcoming_birthdays(db:Session)->List[Contact]:
+def get_contacts_with_upcoming_birthdays(db: Session) -> List[Contact]:
     today = date.today()
     next_week = today + timedelta(days=7)
     if today.year == next_week.year:
@@ -63,28 +63,29 @@ def contacts_with_upcoming_birthdays(db:Session)->List[Contact]:
                     extract('month', Contact.birth_date) > today.month,
                     and_(
                         extract('month', Contact.birth_date) == today.month, 
-                        extract('day', Contact.birth_date) <= today.day
-                        )
-                    ),
+                        extract('day', Contact.birth_date) >= today.day 
+                    )
+                ),
                 or_(
                     extract('month', Contact.birth_date) < next_week.month, 
                     and_(
                         extract('month', Contact.birth_date) == next_week.month,
-                        extract('day', Contact.birth_date) <= next_week.month,
-                        )
+                        extract('day', Contact.birth_date) <= next_week.day 
                     )
                 )
-            ).all()
+            )
+        ).all()
     else:
         return db.query(Contact).filter(
-            or_(and_(
-                extract('month', Contact.birth_date) == today.month,
-                extract('day', Contact.birth_date) >= today.day
-            ), and_(
-                extract('month', Contact.birth_date) == next_week.month,
-                extract('day', Contact.birth_date) <= next_week.day
-
-            ))
-        ).all()
-            
+            or_(
+                and_(
+                    extract('month', Contact.birth_date) == today.month,
+                    extract('day', Contact.birth_date) >= today.day
+                ), 
+                and_(
+                    extract('month', Contact.birth_date) == next_week.month,
+                    extract('day', Contact.birth_date) <= next_week.day
+                )
+            )
+        ).all()          
              
